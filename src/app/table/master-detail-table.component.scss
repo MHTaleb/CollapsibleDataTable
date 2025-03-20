@@ -76,3 +76,20 @@ button[mat-icon-button] {
 }
 
 /* Add more layers as needed */
+
+
+:host.layer-0 .padded-by-depth {
+    padding-left: 00px
+}
+:host.layer-1 .padded-by-depth {
+    padding-left: 10px
+}
+:host.layer-2 .padded-by-depth {
+    padding-left: 20px
+}
+:host.layer-3 .padded-by-depth {
+    padding-left: 30px
+}
+:host.layer-4 .padded-by-depth {
+    padding-left: 40px
+}
