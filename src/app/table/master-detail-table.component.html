@@ -1,48 +1,76 @@
 <!-- MASTER TABLE -->
-<mat-table [dataSource]="dataSignal().rows" class="mat-elevation-z8">
-  <!-- Dynamically create columns based on visible headers -->
-  <ng-container
-    *ngFor="let header of dataSignal().headers"
-    [matColumnDef]="header.id"
-  >
-    @if(header.visible) {
-    <mat-header-cell *matHeaderCellDef> {{ header.name }} </mat-header-cell>
-    <mat-cell *matCellDef="let row"> {{ row.data[header.id] }} </mat-cell>
-    }>
+<mat-table [dataSource]="dataSignal().rows" class="mat-elevation-z8" matSort>
+
+  <!-- Dynamically define columns -->
+  <ng-container *ngFor="let header of dataSignal().headers" [matColumnDef]="header.id">
+    @if (header.visible) {
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        {{ header.name }}
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.data[header.id] }}
+      </mat-cell>
+    }
   </ng-container>
 
-  <mat-header-row *matHeaderRowDef="displayedColumns()"></mat-header-row>
+  <!-- Expand/Collapse Icon Column (optional) -->
+  <ng-container matColumnDef="expandCollapse">
+    <mat-header-cell *matHeaderCellDef></mat-header-cell>
+    <mat-cell *matCellDef="let row">
+      <button mat-icon-button color="primary">
+        <!-- Toggle icons based on row.data.close boolean -->
+        @if (!row.data.close) {
+          <mat-icon>expand_more</mat-icon>
+        } @else {
+          <mat-icon>expand_less</mat-icon>
+        }
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <!-- Header row -->
+  @if( !hideRow(dataSignal().headers )) {
+  <mat-header-row
+    *matHeaderRowDef="displayedColumns(); sticky: true"
+  ></mat-header-row>
+}
+  <!-- Data row with CDK detail expansion -->
   <mat-row
     *matRowDef="let row; columns: displayedColumns()"
-    (click)="onRowClick(row)"
+    class="data-row"
+    [cdkDetailRow]="row"
+    [cdkDetailRowTpl]="rowDetail"
+    (toggleChange)="onToggleChange($event, row)"
+    (click)="scroll($event)"
   ></mat-row>
 </mat-table>
 
-<!-- DETAIL ROWS (using expansion panels for rows that have detailData) -->
-<ng-container *ngFor="let row of dataSignal().rows">
-  @if (row.detailData) {
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        Details for {{ row.data[displayedColumns()[0]] }}
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-
-    <!-- If detail headers differ, render a nested MasterDetailTable -->
-    @if (!areHeadersEqual(dataSignal().headers, row.detailData.headers)) {
-    <app-master-detail-table
-      [dataSignal]="createSignal(row.detailData)"
-    ></app-master-detail-table>
+<!-- ROW DETAIL TEMPLATE -->
+<ng-template #rowDetail let-element>
+  @if (element.detailData) {
+    <!-- If child headers differ from parent, recursively render master-detail-table -->
+    @if (!areHeadersEqual(dataSignal().headers, element.detailData.headers)) {
+      <app-master-detail-table
+        [dataSignal]="createSignal(element.detailData)"
+        [depth]="depth + 1" 
+      ></app-master-detail-table>
     } @else {
-    <!-- Otherwise, render inline detail rows -->
-    <div *ngFor="let detailRow of row.detailData.rows" class="detail-row">
-      <ng-container *ngFor="let header of dataSignal().headers">
-        @if(header.visible) {
-        <span class="detail-cell">{{ detailRow.data[header.id] }}</span>
-        }>
-      </ng-container>
-    </div>
+      <!-- Otherwise, render inline detail rows -->
+      <app-master-detail-table
+      [dataSignal]="createSignal(element.detailData,true)"
+      [depth]="depth + 1" 
+    ></app-master-detail-table>
+      <!-- <div *ngFor="let detailRow of element.detailData.rows" class="inline-detail">
+        <ng-container *ngFor="let header of dataSignal().headers">
+          @if (header.visible) {
+            <span class="detail-cell">
+              {{ detailRow.data[header.id] }}
+            </span>
+          }
+        </ng-container>
+      </div> -->
     }
-  </mat-expansion-panel>
+  } @else {
+    <div>No detail data</div>
   }
-</ng-container>
+</ng-template>
