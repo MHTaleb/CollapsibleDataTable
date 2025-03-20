@@ -45,7 +45,7 @@ export class AppComponent {
           headers: [
             {
               name: 'Hub ID', id: 'hubId', visible: true,
-              hideRow: true
+              hideRow: false
             },
             {
               name: 'Location', id: 'location', visible: true,
