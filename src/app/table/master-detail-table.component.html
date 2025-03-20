@@ -16,7 +16,7 @@
   <!-- Expand/Collapse Icon Column (optional) -->
   <ng-container matColumnDef="expandCollapse">
     <mat-header-cell *matHeaderCellDef></mat-header-cell>
-    <mat-cell *matCellDef="let row">
+    <mat-cell  class="padded-by-depth" *matCellDef="let row">
       <button mat-icon-button color="primary">
         <!-- Toggle icons based on row.data.close boolean -->
         @if (!row.data.close) {
