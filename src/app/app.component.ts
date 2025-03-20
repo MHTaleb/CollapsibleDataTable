@@ -163,10 +163,45 @@ export class AppComponent {
 
   ngOnInit(){
     syncHeadersRecursively(this.megaProjectData);
-    this.megaProjectData.rows.push(this.megaProjectData.rows[0])
-    this.megaProjectData.rows.push(this.megaProjectData.rows[0])
-    this.megaProjectData.rows.push(this.megaProjectData.rows[0])
-    this.megaProjectData.rows.push(this.megaProjectData.rows[0])
+
+    const singleRow =  
+      // ================== LEVEL 1 (MASTER) - 2 ROWS ==================
+      {
+        data: {
+          id: 'GLOBAL-1',
+          projectName: 'Interstellar Infrastructure',
+          manager: 'Dr. Celeste Orion',
+          goal: 'Deep Space Expansion',
+          budget: '₵250B'
+        },
+        detailData: { // LEVEL 5 - 4 ROWS
+                            headers: [
+                              {
+                                name: 'Unit ID', id: 'unitId', visible: true,
+                                hideRow: false
+                              },
+                              {
+                                name: 'Family Name', id: 'family', visible: true,
+                                hideRow: false
+                              },
+                              {
+                                name: 'Special Requirements', id: 'requirements', visible: true,
+                                hideRow: false
+                              },
+                            ],
+                            rows: [
+                              { data: { unitId: 'UNIT-01', family: 'Zeta-9 Clan', requirements: 'Low-gravity adaptation' } },
+                              { data: { unitId: 'UNIT-02', family: 'Voidborn Collective', requirements: 'Enhanced radiation shielding' } },
+                              { data: { unitId: 'UNIT-03', family: 'Nebula Researchers', requirements: 'Lab integration' } },
+                              { data: { unitId: 'UNIT-04', family: 'Transit Crew', requirements: 'Temporary lodging' } },
+                            ]
+                          }
+      };
+     
+    
+
+   
+    this.megaProjectData.rows.push(singleRow)
     this.tableSignal.set(this.megaProjectData);
   }
   bigSampleData(bigSampleData: any) {
