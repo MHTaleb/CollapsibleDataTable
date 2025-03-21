@@ -13,25 +13,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';          // needed for <mat-icon>
 import { MatButtonModule } from '@angular/material/button';       // needed for <button mat-icon-button>
 import { CdkDetailRowDirective } from './cdk-detail-row.directive'; // your custom directive
-
-/** Interfaces for headers, rows, and table data */
-export interface TableHeader {
-  name: string;
-  id: string;
-  sortCallback?: (a: any, b: any) => number;
-  visible: boolean;
-  hideRow:boolean
-}
-
-export interface TableRow {
-  data: { [key: string]: any };
-  detailData?: TableData; // optional nested detail
-}
-
-export interface TableData {
-  headers: TableHeader[];
-  rows: TableRow[];
-}
+import { TableData, TableHeader, TableRow } from './model/master-detail-table.model';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-master-detail-table',
@@ -43,7 +26,7 @@ export interface TableData {
     MatIconModule,
     MatButtonModule,
     CdkDetailRowDirective,
-    // Not referencing itself; remove MasterDetailTableComponent from imports to avoid warnings
+    MatMenuModule
   ],
   templateUrl: './master-detail-table.component.html',
   styleUrls: ['./master-detail-table.component.scss'],
@@ -87,6 +70,8 @@ export class MasterDetailTableComponent {
     console.log('Row clicked or scrolled:', evt);
   }
 
+
+  
   /**
    * Compare two header arrays for equality based on (id, name, visible).
    */

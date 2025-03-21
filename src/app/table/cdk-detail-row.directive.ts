@@ -8,6 +8,7 @@ import {
   EventEmitter,
   HostListener,
   OnDestroy,
+  input,
 } from '@angular/core';
 
 /**
@@ -20,7 +21,7 @@ import {
 export class CdkDetailRowDirective implements OnDestroy {
   @Input() cdkDetailRow: any;                 // The row data
   @Input() cdkDetailRowTpl!: TemplateRef<any>; // The template to render when expanded
-
+  @Input() autoTogleOnClick = false;
   @Output() toggleChange = new EventEmitter<boolean>();
 
   private embeddedView: EmbeddedViewRef<any> | null = null;

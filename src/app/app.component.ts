@@ -1,5 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { MasterDetailTableComponent, TableData, TableHeader } from './table/master-detail-table.component';
+import { MasterDetailTableComponent } from './table/master-detail-table.component';
+import { Action, NestedMapping, TableData } from './table/model/master-detail-table.model'; 
+import { TableHeaderBuilder, SimpleColumn, ActionColumn } from './table/model/table-header-builder'; 
+import { DtoOrder, MockMasterDetailTableDataService } from './table/service/mock-master-detail-table-data.service';
+import { NestedTableBuilder } from './table/service/nested-table-builder';
+import { syncHeadersRecursively } from './table/service/master-detail-table.service';
 
 @Component({
   selector: 'app-root',
@@ -11,240 +16,69 @@ import { MasterDetailTableComponent, TableData, TableHeader } from './table/mast
   `,
 })
 export class AppComponent {
-   megaProjectData: TableData = {
-    headers: [
-      { name: 'Project ID', id: 'id', visible: true, hideRow: false },
-      {
-        name: 'Project Name', id: 'projectName', visible: true,
-        hideRow: false
-      },
-      {
-        name: 'Program Manager', id: 'manager', visible: true,
-        hideRow: false
-      },
-      {
-        name: 'Strategic Goal', id: 'goal', visible: true,
-        hideRow: false
-      },
-      {
-        name: 'Global Budget', id: 'budget', visible: true,
-        hideRow: false
-      },
-    ],
-    rows: [
-      // ================== LEVEL 1 (MASTER) - 2 ROWS ==================
-      {
-        data: {
-          id: 'GLOBAL-1',
-          projectName: 'Interstellar Infrastructure',
-          manager: 'Dr. Celeste Orion',
-          goal: 'Deep Space Expansion',
-          budget: '₵250B'
-        },
-        detailData: { // LEVEL 2 - 4 ROWS
-          headers: [
-            {
-              name: 'Hub ID', id: 'hubId', visible: true,
-              hideRow: false
-            },
-            {
-              name: 'Location', id: 'location', visible: true,
-              hideRow: false
-            },
-            {
-              name: 'Status', id: 'status', visible: true,
-              hideRow: false
-            },
-            {
-              name: 'Population', id: 'population', visible: true,
-              hideRow: false
-            },
-          ],
-          rows: [
-            {
-              data: {
-                hubId: 'HUB-ALPHA',
-                location: 'Andromeda Station',
-                status: 'Phase 3',
-                population: '1.2M'
-              },
-              detailData: { // LEVEL 3 - 4 ROWS
-                headers: [
-                  {
-                    name: 'Module ID', id: 'moduleId', visible: true,
-                    hideRow: false
-                  },
-                  {
-                    name: 'Module Type', id: 'type', visible: true,
-                    hideRow: false
-                  },
-                  {
-                    name: 'Gravity Control', id: 'gravity', visible: true,
-                    hideRow: false
-                  },
-                  {
-                    name: 'Oxygen Levels', id: 'oxygen', visible: true,
-                    hideRow: false
-                  },
-                ],
-                rows: [
-                  {
-                    data: {
-                      moduleId: 'MOD-1A',
-                      type: 'Residential',
-                      gravity: '1.0G',
-                      oxygen: '22%'
-                    },
-                    detailData: { // LEVEL 4 - 4 ROWS
-                      headers: [
-                        {
-                          name: 'Floor ID', id: 'floorId', visible: true,
-                          hideRow: false
-                        },
-                        {
-                          name: 'Capacity', id: 'capacity', visible: true,
-                          hideRow: false
-                        },
-                        {
-                          name: 'Current Residents', id: 'residents', visible: true,
-                          hideRow: false
-                        },
-                      ],
-                      rows: [
-                        {
-                          data: {
-                            floorId: 'FL-01',
-                            capacity: '5000',
-                            residents: '4873'
-                          },
-                          detailData: { // LEVEL 5 - 4 ROWS
-                            headers: [
-                              {
-                                name: 'Unit ID', id: 'unitId', visible: true,
-                                hideRow: false
-                              },
-                              {
-                                name: 'Family Name', id: 'family', visible: true,
-                                hideRow: false
-                              },
-                              {
-                                name: 'Special Requirements', id: 'requirements', visible: true,
-                                hideRow: false
-                              },
-                            ],
-                            rows: [
-                              { data: { unitId: 'UNIT-01', family: 'Zeta-9 Clan', requirements: 'Low-gravity adaptation' } },
-                              { data: { unitId: 'UNIT-02', family: 'Voidborn Collective', requirements: 'Enhanced radiation shielding' } },
-                              { data: { unitId: 'UNIT-03', family: 'Nebula Researchers', requirements: 'Lab integration' } },
-                              { data: { unitId: 'UNIT-04', family: 'Transit Crew', requirements: 'Temporary lodging' } },
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  // 3 more LEVEL 3 rows
-                  { data: { moduleId: 'MOD-1B', type: 'Agricultural', gravity: '0.8G', oxygen: '25%' }  },
-                  { data: { moduleId: 'MOD-1C', type: 'Industrial', gravity: '1.2G', oxygen: '19%' }  },
-                  { data: { moduleId: 'MOD-1D', type: 'Research', gravity: '1.0G', oxygen: '22%' }  },
-                ]
-              }
-            },
-            // 3 more LEVEL 2 rows
-            { data: { hubId: 'HUB-BETA', location: 'Orion Ring', status: 'Phase 1', population: '0.2M' }},
-            { data: { hubId: 'HUB-GAMMA', location: 'Pleiades Node', status: 'Phase 2', population: '0.8M' }},
-            { data: { hubId: 'HUB-DELTA', location: 'Sirius Gateway', status: 'Planning', population: 'N/A' }},
-          ]
+ 
+  tableSignal = signal<TableData>({} as TableData);
+  actions: Action[] = [{
+    label: 'Edit',
+    action: (row) => this.editRow(row)
+  }, {
+    label: 'Delete',
+    action: (row) => this.deleteRow(row)
+  }];
+  // Define header arrays and nested mapping plan.
+  private orderHeaders = new TableHeaderBuilder()
+    .withHiddenHeader(false) 
+    .withColumn(new SimpleColumn('orderID', 'Order ID'))
+    .withColumn(new SimpleColumn('value', 'Value'))
+    .withColumn(new ActionColumn('actions', 'Actions', this.actions))
+    .build();
+
+  private invoiceHeaders = new TableHeaderBuilder()
+    .withHiddenHeader(false) 
+    .withColumn(new SimpleColumn('id', 'Invoice ID'))
+    .withColumn(new SimpleColumn('valueInvoice', 'Invoice Value'))
+    .build();
+
+  private shipmentHeaders = new TableHeaderBuilder()
+    .withHiddenHeader(false) 
+    .withColumn(new SimpleColumn('shipmentID', 'Shipment ID'))
+    .withColumn(new SimpleColumn('shipmentValue', 'Shipment Value'))
+    .withColumn(new ActionColumn('actions', 'Actions', this.actions))
+    .build();
+
+  // Create the nested mapping plan.
+  private nestedMapping: NestedMapping = {
+    dtoInvoices: {
+      headers: this.invoiceHeaders,
+      autoHide: false,
+      nestedMapping: {
+        dtoShippements: {
+          headers: this.shipmentHeaders
         }
-      },
-     
-    ]
+      }
+    }
   };
 
-  ngOnInit(){
-    syncHeadersRecursively(this.megaProjectData);
+  constructor(private readonly mockService: MockMasterDetailTableDataService) {}
 
-    const singleRow =  
-      // ================== LEVEL 1 (MASTER) - 2 ROWS ==================
-      {
-        data: {
-          id: 'GLOBAL-1',
-          projectName: 'Interstellar Infrastructure',
-          manager: 'Dr. Celeste Orion',
-          goal: 'Deep Space Expansion',
-          budget: '₵250B'
-        },
-        detailData: { // LEVEL 5 - 4 ROWS
-                            headers: [
-                              {
-                                name: 'Unit ID', id: 'unitId', visible: true,
-                                hideRow: false
-                              },
-                              {
-                                name: 'Family Name', id: 'family', visible: true,
-                                hideRow: false
-                              },
-                              {
-                                name: 'Special Requirements', id: 'requirements', visible: true,
-                                hideRow: false
-                              },
-                            ],
-                            rows: [
-                              { data: { unitId: 'UNIT-01', family: 'Zeta-9 Clan', requirements: 'Low-gravity adaptation' } },
-                              { data: { unitId: 'UNIT-02', family: 'Voidborn Collective', requirements: 'Enhanced radiation shielding' } },
-                              { data: { unitId: 'UNIT-03', family: 'Nebula Researchers', requirements: 'Lab integration' } },
-                              { data: { unitId: 'UNIT-04', family: 'Transit Crew', requirements: 'Temporary lodging' } },
-                            ]
-                          }
-      };
-     
-    
-
-   
-    this.megaProjectData.rows.push(singleRow)
-    this.tableSignal.set(this.megaProjectData);
-  }
-  bigSampleData(bigSampleData: any) {
-    throw new Error('Method not implemented.');
-  }
-  // Create a signal from the large sample data
-  tableSignal = signal<TableData>({} as TableData);
-}
-/* The helper functions */
-
-function syncHeadersRecursively(tableData: TableData): void {
-  for (const row of tableData.rows) {
-    if (row.detailData) {
-      syncParentChildHeaders(tableData.headers, row.detailData.headers);
-      syncHeadersRecursively(row.detailData);
-    }
-  }
-}
-
-function syncParentChildHeaders(parentHeaders: TableHeader[], childHeaders: TableHeader[]): void {
-  // Ensure child has filler columns for parent's columns
-  for (const pHeader of parentHeaders) {
-   
-    if (parentHeaders.filter(p => p.visible).length > childHeaders.filter(p => p.visible).length ) {
-      childHeaders.push({
-        name: '__',
-        id: 'filler_' + pHeader.id,
-        visible: true,
-        hideRow: false,
-      });
-    }
+  ngOnInit(): void {
+    this.mockService.getMockOrders().subscribe((orders: DtoOrder[]) => {
+      // Convert the orders DTO list into our nested TableData model.
+      const tableData: TableData = NestedTableBuilder.buildTable(
+        this.orderHeaders,
+        orders,
+        this.nestedMapping
+      );
+      syncHeadersRecursively(tableData);
+      this.tableSignal.set(tableData);
+      console.log('Mapped TableData:', tableData);
+    });
   }
 
-  // Ensure parent has filler columns for child's columns
-  for (const cHeader of childHeaders) {
-     
-    if (childHeaders.filter(p => p.visible).length > parentHeaders.filter(p => p.visible).length) {
-      parentHeaders.push({
-        name: '__',
-        id: 'filler_' + cHeader.id,
-        visible: true,
-        hideRow: false,
-      });
-    }
+  deleteRow(row: any): void {
+    alert("delete  ==> "+JSON.stringify(row) );
+  }
+  editRow(row: any): void {
+    alert("edit  ==> "+JSON.stringify(row) );
   }
 }

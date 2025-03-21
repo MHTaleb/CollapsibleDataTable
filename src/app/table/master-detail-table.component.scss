@@ -93,3 +93,12 @@ button[mat-icon-button] {
 :host.layer-4 .padded-by-depth {
     padding-left: 40px
 }
+
+.mat-column-actions {
+    width: 48px; // Fixed width for menu column
+    text-align: center;
+  
+    button {
+      margin: 0 auto;
+    }
+  }
