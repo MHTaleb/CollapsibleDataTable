@@ -13,14 +13,14 @@
           {{ row.data[header.id] }}
         }
         
-        <!-- Actions Menu Cell -->
-        @if (header.actions?.length) {
+         <!-- Actions Menu Cell -->
+         @if (header.actions?.length) {
           <button mat-icon-button [matMenuTriggerFor]="menu">
             <mat-icon>more_vert</mat-icon>
           </button>
           <mat-menu #menu="matMenu">
             @for (action of header.actions; track action) {
-              <button mat-menu-item (click)="$event.preventDefault();action.action(row.data)">
+              <button mat-menu-item (click)="$event.preventDefault(); action.action(row.data)">
                 {{ action.label }}
               </button>
             }
@@ -33,55 +33,46 @@
   <!-- Expand/Collapse Icon Column (optional) -->
   <ng-container matColumnDef="expandCollapse">
     <mat-header-cell *matHeaderCellDef></mat-header-cell>
-    <mat-cell  class="padded-by-depth" *matCellDef="let row">
+    <mat-cell class="padded-by-depth" *matCellDef="let row">
       @if (row.detailData) {
-      <button mat-icon-button color="primary">
-        <!-- Toggle icons based on row.data.close boolean -->
-        @if (!row.data.close) {
-          <mat-icon>expand_more</mat-icon>
-        } @else {
-          <mat-icon>expand_less</mat-icon>
-        }
-      </button>
-    }
+        <button mat-icon-button color="primary" (click)="toggleRow(row, $event)">
+          @if (!row.data.close) {
+            <mat-icon>expand_more</mat-icon>
+          } @else {
+            <mat-icon>expand_less</mat-icon>
+          }
+        </button>
+      }
     </mat-cell>
   </ng-container>
 
   <!-- Header row -->
-  @if( !hideRow(dataSignal().headers )) {
-  <mat-header-row
-    *matHeaderRowDef="displayedColumns(); sticky: true"
-  ></mat-header-row>
-}
+  @if (!hideRow(dataSignal().headers)) {
+    <mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></mat-header-row>
+  }
   <!-- Data row with CDK detail expansion -->
   <mat-row
     *matRowDef="let row; columns: displayedColumns()"
     class="data-row"
     [cdkDetailRow]="row"
     [cdkDetailRowTpl]="rowDetail"
-    (toggleChange)="onToggleChange($event, row)"
-    (click)="scroll($event)"
-  ></mat-row>
+    (click)="scroll($event)">
+  </mat-row>
 </mat-table>
 
 <!-- ROW DETAIL TEMPLATE -->
 <ng-template #rowDetail let-element>
   @if (element.detailData) {
-    <!-- If child headers differ from parent, recursively render master-detail-table -->
     @if (!areHeadersEqual(dataSignal().headers, element.detailData.headers)) {
       <app-master-detail-table
         [dataSignal]="createSignal(element.detailData)"
-        [depth]="depth + 1" 
-      ></app-master-detail-table>
+        [depth]="depth + 1">
+      </app-master-detail-table>
     } @else {
-      <!-- Otherwise, render inline detail rows -->
       <app-master-detail-table
-      [dataSignal]="createSignal(element.detailData,true)"
-      [depth]="depth + 1" 
-    ></app-master-detail-table>
-      
+        [dataSignal]="createSignal(element.detailData, true)"
+        [depth]="depth + 1">
+      </app-master-detail-table>
     }
-  } @else {
-    
   }
 </ng-template>
