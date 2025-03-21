@@ -1,68 +1,76 @@
-<mat-table
-[dataSource]="dataSignal().rows"
-class="mat-elevation-z8"
-multiTemplateDataRows
->
-<!-- Dynamically define each visible column -->
-<ng-container *ngFor="let header of dataSignal().headers" [matColumnDef]="header.id">
-  @if (header.visible) {
-    <mat-header-cell *matHeaderCellDef>
-      {{ header.name }}
-    </mat-header-cell>
-    <mat-cell *matCellDef="let row">
-      {{ row.data[header.id] }}
-    </mat-cell>
-  }
-</ng-container>
+<!-- MASTER TABLE -->
+<mat-table [dataSource]="dataSignal().rows" class="mat-elevation-z8" matSort>
 
-<!-- Expansion Detail Column Definition -->
-<ng-container matColumnDef="expandedDetail">
-  <mat-cell *matCellDef="let row" [attr.colspan]="displayedColumns().length">
-    @if (row.detailData) {
-      <mat-expansion-panel
-        [expanded]="expandedRow() === row"
-        (opened)="expandedRow.set(row)"
-        (closed)="expandedRow.set(null)"
-      >
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            Details for {{ row.data[displayedColumns()[0]] }}
-          </mat-panel-title>
-        </mat-expansion-panel-header>
-
-        <!-- If detail headers differ, render a nested table -->
-        @if (!areHeadersEqual(dataSignal().headers, row.detailData.headers)) {
-          <app-master-detail-table
-            [dataSignal]="createSignal(row.detailData)"
-          ></app-master-detail-table>
-        } @else {
-          <!-- Otherwise, render "inline" details -->
-          <div *ngFor="let detailRow of row.detailData.rows" class="inline-detail">
-            <ng-container *ngFor="let header of dataSignal().headers">
-              @if (header.visible) {
-                <span class="detail-cell">{{ detailRow.data[header.id] }}</span>
-              }
-            </ng-container>
-          </div>
-        }
-      </mat-expansion-panel>
+  <!-- Dynamically define columns -->
+  <ng-container *ngFor="let header of dataSignal().headers" [matColumnDef]="header.id">
+    @if (header.visible) {
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        {{ header.name }}
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.data[header.id] }}
+      </mat-cell>
     }
-  </mat-cell>
-</ng-container>
+  </ng-container>
 
-<!-- Header Row -->
-<mat-header-row *matHeaderRowDef="displayedColumns()"></mat-header-row>
+  <!-- Expand/Collapse Icon Column (optional) -->
+  <ng-container matColumnDef="expandCollapse">
+    <mat-header-cell *matHeaderCellDef></mat-header-cell>
+    <mat-cell  class="padded-by-depth" *matCellDef="let row">
+      <button mat-icon-button color="primary">
+        <!-- Toggle icons based on row.data.close boolean -->
+        @if (!row.data.close) {
+          <mat-icon>expand_more</mat-icon>
+        } @else {
+          <mat-icon>expand_less</mat-icon>
+        }
+      </button>
+    </mat-cell>
+  </ng-container>
 
-<!-- Main Row: displays columns -->
-<mat-row
-  *matRowDef="let row; columns: displayedColumns()"
-  (click)="toggleExpand(row)"
-  class="data-row"
-></mat-row>
-
-<!-- Detail Row: uses the single column 'expandedDetail' -->
-<mat-row
-  *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
-  class="detail-row"
-></mat-row>
+  <!-- Header row -->
+  @if( !hideRow(dataSignal().headers )) {
+  <mat-header-row
+    *matHeaderRowDef="displayedColumns(); sticky: true"
+  ></mat-header-row>
+}
+  <!-- Data row with CDK detail expansion -->
+  <mat-row
+    *matRowDef="let row; columns: displayedColumns()"
+    class="data-row"
+    [cdkDetailRow]="row"
+    [cdkDetailRowTpl]="rowDetail"
+    (toggleChange)="onToggleChange($event, row)"
+    (click)="scroll($event)"
+  ></mat-row>
 </mat-table>
+
+<!-- ROW DETAIL TEMPLATE -->
+<ng-template #rowDetail let-element>
+  @if (element.detailData) {
+    <!-- If child headers differ from parent, recursively render master-detail-table -->
+    @if (!areHeadersEqual(dataSignal().headers, element.detailData.headers)) {
+      <app-master-detail-table
+        [dataSignal]="createSignal(element.detailData)"
+        [depth]="depth + 1" 
+      ></app-master-detail-table>
+    } @else {
+      <!-- Otherwise, render inline detail rows -->
+      <app-master-detail-table
+      [dataSignal]="createSignal(element.detailData,true)"
+      [depth]="depth + 1" 
+    ></app-master-detail-table>
+      <!-- <div *ngFor="let detailRow of element.detailData.rows" class="inline-detail">
+        <ng-container *ngFor="let header of dataSignal().headers">
+          @if (header.visible) {
+            <span class="detail-cell">
+              {{ detailRow.data[header.id] }}
+            </span>
+          }
+        </ng-container>
+      </div> -->
+    }
+  } @else {
+    <div>No detail data</div>
+  }
+</ng-template>
