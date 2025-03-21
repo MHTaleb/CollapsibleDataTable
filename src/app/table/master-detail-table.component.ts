@@ -15,7 +15,7 @@ import {
   import { MatIconModule } from '@angular/material/icon';
   import { MatButtonModule } from '@angular/material/button';
   import { MatMenuModule } from '@angular/material/menu';
-  import { CdkDetailRowDirective } from './cdk-detail-row.directive';
+  import { CdkDetailRowDirective } from './directive/cdk-detail-row.directive';
   import { TableData, TableHeader, TableRow, Action } from './model/master-detail-table.model';
   
   @Component({
@@ -48,7 +48,7 @@ import {
     displayedColumns = computed(() => {
       let columns = this.dataSignal().headers.filter(h => h.visible).map(h => h.id);
       // Optionally, add any extra columns (e.g., actions, expandCollapse)
-      if (this.dataSignal().headers.some(h => h.id === 'actions')) {
+      if (this.dataSignal().headers.some(h => h.id === 'actions') && !columns.some(col => col === 'actions')) {
         columns.push('actions');
       }
       const hasChildTable = this.dataSignal().rows.some(row => row.detailData);

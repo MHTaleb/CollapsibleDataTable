@@ -1,4 +1,4 @@
-import { CdkDetailRowDirective } from "../cdk-detail-row.directive";
+import { CdkDetailRowDirective } from "../directive/cdk-detail-row.directive";
 
 /** Interfaces for headers, rows, and table data */
 export interface Action {

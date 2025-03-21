@@ -1,13 +1,15 @@
-<!-- MASTER TABLE -->
+<!-- MASTER TABLE --> 
 <mat-table [dataSource]="dataSignal().rows" class="mat-elevation-z8" matSort>
 
   <!-- Dynamically define columns -->
   <ng-container *ngFor="let header of dataSignal().headers" [matColumnDef]="header.id">
+    
     @if (header.visible) {
       <mat-header-cell *matHeaderCellDef mat-sort-header>
         {{ header.name }}
       </mat-header-cell>
-      <mat-cell *matCellDef="let row">
+
+      <mat-cell *matCellDef="let row"> 
          <!-- Regular Data Cell -->
          @if (!header.actions) {
           {{ row.data[header.id] }}

@@ -1,12 +1,5 @@
-import { TableData, TableHeader, TableRow } from '../model/master-detail-table.model';
+import { NestedMapping, TableData, TableHeader, TableRow } from '../model/master-detail-table.model';
 
-export interface NestedMapping {
-  [property: string]: {
-    headers: TableHeader[];
-    autoHide?: boolean;
-    nestedMapping?: NestedMapping;
-  };
-}
 
 export class NestedTableBuilder {
   static buildTable(
