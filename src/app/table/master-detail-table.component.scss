@@ -56,23 +56,23 @@ button[mat-icon-button] {
 
 /* Background colors for each layer */
 :host.layer-0 .data-row {
-    background-color: #a8bda8;
+    background-color: #c4d3df;
 }
 
 :host.layer-1 .data-row {
-    background-color: #5fbb97;
+    background-color: #9bb1c4;
 }
 
 :host.layer-2 .data-row {
-    background-color: #c2b5d8;
+    background-color: #7e98ae;
 }
 
 :host.layer-3 .data-row {
-    background-color: #f2d0a9;
+    background-color: #627e96;
 }
 
 :host.layer-4 .data-row {
-    background-color: #7cb4b8;
+    background-color: #45647f;
 }
 
 /* Add more layers as needed */
@@ -102,3 +102,101 @@ button[mat-icon-button] {
       margin: 0 auto;
     }
   }
+
+
+
+
+  //----------------------- added from the shared table
+  
+:host {
+    --header: #D8DFE4;
+    --text-icon-color: #252424;
+    --pag-icon-color: #4C4B4B;
+
+}
+
+.datatable{
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    div{
+        overflow: hidden;
+    }
+}
+
+mat-header-cell,
+mat-cell,
+mat-footer-cell {
+    border-bottom-style: unset;
+    width: auto !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+mat-header-cell{
+   font-weight: bold !important;
+}
+
+.text-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mat-row,
+.mat-footer-row {
+    margin-bottom: unset !important;
+    margin-top: unset !important;
+    min-height: 50px !important;
+}
+
+mat-row:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+mat-row:nth-child(odd) {
+  @apply bg-gray-300;
+}
+
+::ng-deep.mat-paginator .mat-paginator-container {
+    padding: 0px 16px !important;
+
+    .mat-paginator-range-actions,
+    .mat-paginator-page-size {
+        margin: unset !important;
+        color: #64748b !important;
+    }
+}
+
+:host ::ng-deep .mat-mdc-header-row {
+    background-color: var(--header) !important;
+}
+
+:host ::ng-deep .mat-mdc-header-cell {
+    background-color: var(--header) !important;
+    color:var(--text-icon-color)!important;
+}
+
+:host ::ng-deep .mat-mdc-paginator-outer-container {
+    // background-color: var(--header) !important;
+}
+
+:host ::ng-deep .mat-sort-header-arrow {
+    color: var(--text-icon-color) !important;
+}
+
+:host ::ng-deep .mat-mdc-paginator-container {
+    justify-content: flex-end !important;
+    .mat-mdc-paginator-icon{
+       fill:var(--pag-icon-color)!important;
+    }
+}
+:host ::ng-deep .mat-mdc-icon-button[disabled] .mat-mdc-paginator-icon {
+    fill: rgba(255,255,255, 0.5)!important;
+}
+
+tr,
+td {
+    border-width: 0px !important;
+    width: inherit !important;
+}
